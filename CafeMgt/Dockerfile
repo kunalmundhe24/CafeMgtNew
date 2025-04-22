@@ -7,7 +7,8 @@ RUN rm -rf /usr/local/tomcat/webapps/*
 # Copy your built WAR file to webapps directory
 COPY build/CafeMgt.war /usr/local/tomcat/webapps/ROOT.war
 
-# Expose port
-EXPOSE 8000
+# Expose port 9090 instead of 8080
+EXPOSE 9090
 
+# Run Tomcat
 CMD ["catalina.sh", "run"]
