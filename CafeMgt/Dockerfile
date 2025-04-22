@@ -8,6 +8,6 @@ RUN rm -rf /usr/local/tomcat/webapps/*
 COPY build/CafeMgt.war /usr/local/tomcat/webapps/ROOT.war
 
 # Expose port
-EXPOSE 8080
+EXPOSE 8000
 
 CMD ["catalina.sh", "run"]
