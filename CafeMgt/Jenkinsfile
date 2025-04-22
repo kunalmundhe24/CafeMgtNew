@@ -1,44 +1,46 @@
 pipeline {
     agent any
 
+    tools {
+        jdk 'jdk11' // Make sure this JDK is configured in Jenkins
+        ant 'Ant'   // Configure Apache Ant in Jenkins Global Tools
+    }
+
+    environment {
+        IMAGE_NAME = 'cafemgt-app'
+        TAG = 'latest'
+    }
+
     stages {
         stage('Checkout') {
             steps {
-                // If you're using Git, use `checkout scm`
-                echo 'Checked out code'
+                checkout scm
             }
         }
 
-        stage('Build') {
+        stage('Build WAR') {
             steps {
-                echo 'Building using Ant'
-                sh 'ant -f build.xml clean dist'
+                sh 'ant clean'
+                sh 'ant'
             }
         }
 
-        stage('Archive Artifacts') {
+        stage('Docker Build') {
             steps {
-                archiveArtifacts artifacts: 'dist/*.war', fingerprint: true
+                sh 'docker build -t $IMAGE_NAME:$TAG .'
             }
         }
 
-        // Optional Docker Stage
-        stage('Docker Build and Run') {
+        stage('Run Container') {
             steps {
-                script {
-                    docker.build('cafemgt-app', '.')
-                    sh 'docker run -d -p 8080:8080 cafemgt-app'
-                }
+                sh 'docker run -d -p 8080:8080 --name cafemgt-container $IMAGE_NAME:$TAG'
             }
         }
     }
 
     post {
-        failure {
-            echo 'Build failed!'
-        }
-        success {
-            echo 'Build succeeded!'
+        always {
+            echo 'Pipeline complete.'
         }
     }
 }
