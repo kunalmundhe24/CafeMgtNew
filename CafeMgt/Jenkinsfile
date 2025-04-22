@@ -1,0 +1,44 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // If you're using Git, use `checkout scm`
+                echo 'Checked out code'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo 'Building using Ant'
+                sh 'ant -f build.xml clean dist'
+            }
+        }
+
+        stage('Archive Artifacts') {
+            steps {
+                archiveArtifacts artifacts: 'dist/*.war', fingerprint: true
+            }
+        }
+
+        // Optional Docker Stage
+        stage('Docker Build and Run') {
+            steps {
+                script {
+                    docker.build('cafemgt-app', '.')
+                    sh 'docker run -d -p 8080:8080 cafemgt-app'
+                }
+            }
+        }
+    }
+
+    post {
+        failure {
+            echo 'Build failed!'
+        }
+        success {
+            echo 'Build succeeded!'
+        }
+    }
+}
