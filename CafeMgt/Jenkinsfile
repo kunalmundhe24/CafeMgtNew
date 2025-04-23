@@ -1,14 +1,14 @@
 pipeline {
     agent any
 
-    tools {
-        jdk 'jdk11' // Make sure this JDK is configured in Jenkins
-        ant 'Ant'   // Configure Apache Ant in Jenkins Global Tools
+    environment {
+        // Set any global environment variables here
+        MAVEN_OPTS = "-Dmaven.test.failure.ignore=false"
     }
 
-    environment {
-        IMAGE_NAME = 'cafemgt-app'
-        TAG = 'latest'
+    tools {
+        maven 'Maven 3.8.5' // Replace with the name of the Maven tool in Jenkins global config
+        jdk 'Java 21'       // Replace with the name of your JDK installation
     }
 
     stages {
@@ -18,29 +18,41 @@ pipeline {
             }
         }
 
-        stage('Build WAR') {
+        stage('Build') {
             steps {
-                sh 'ant clean'
-                sh 'ant'
+                sh 'mvn clean compile'
             }
         }
 
-        stage('Docker Build') {
+        stage('Test') {
             steps {
-                sh 'docker build -t $IMAGE_NAME:$TAG .'
+                sh 'mvn test'
             }
         }
 
-        stage('Run Container') {
+        stage('Package') {
             steps {
-                sh 'docker run -d -p 8080:8080 --name cafemgt-container $IMAGE_NAME:$TAG'
+                sh 'mvn package'
             }
         }
+
+        // Optional deployment stage
+        /*
+        stage('Deploy') {
+            steps {
+                // Example: copy WAR to Tomcat webapps folder
+                sh 'cp target/your-app.war /path/to/tomcat/webapps/'
+            }
+        }
+        */
     }
 
     post {
-        always {
-            echo 'Pipeline complete.'
+        success {
+            echo 'Build and tests succeeded!'
+        }
+        failure {
+            echo 'Build failed!'
         }
     }
 }
