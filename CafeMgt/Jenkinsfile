@@ -1,47 +1,73 @@
 pipeline {
     agent any
 
-    environment {
-        MAVEN_OPTS = "-Dmaven.test.failure.ignore=false"
-    }
-
-    tools {
-        maven 'MAVEN_HOME'   // Replace with the name you used in Global Tool Configuration
-        jdk 'Java 21'         // Replace with the name you used for JDK in Global Tool Configuration
-    }
-
     stages {
-        stage('Checkout') {
+        stage("Git Clone") {
             steps {
-                checkout scm  // This will use the Git tool configured in Jenkins (no need for explicit Git tool here)
+                git(
+                    credentialsId: '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',
+                    branch: 'master',
+                    url: 'https://github.com/kunalmundhe24/CafeMgtNew.git'  // 🔁 Change this to your Java project's actual repo
+                )
+                bat "dir /s" // Debug: list files
             }
         }
 
-        stage('Build') {
+        stage('Build with Ant') {
             steps {
-                sh 'mvn clean compile'
+                bat '''
+                    echo "🔹 Checking if Ant is installed..."
+                    ant -version || exit /b 1
+
+                    echo "🔹 Building the project using build.xml..."
+                    ant -f CafeMgt/build.xml
+
+                    if errorlevel 1 (
+                        echo "❌ ERROR: Build failed!"
+                        exit /b 1
+                    )
+                '''
             }
         }
 
-        stage('Test') {
+        stage('Run Tests') {
             steps {
-                sh 'mvn test'
+                bat '''
+                    echo "🔹 Running JUnit Tests..."
+                    ant -f CafeMgt/build.xml test
+
+                    if errorlevel 1 (
+                        echo "❌ Tests Failed!"
+                        exit /b 1
+                    )
+                '''
             }
         }
 
-        stage('Package') {
+        stage('Deploy') {
+            when {
+                expression { return currentBuild.result == null || currentBuild.result == 'SUCCESS' }
+            }
             steps {
-                sh 'mvn package'
+                bat '''
+                    echo "🚀 Deploying the application..."
+                    echo "🔹 (Simulated Deployment - Customize this for real deployment)"
+                    REM Example: copy WAR file to Tomcat/webapps or run a script
+                    echo "✅ Deployment step complete!"
+                '''
             }
         }
     }
 
     post {
-        success {
-            echo 'Build and tests succeeded!'
+        always {
+            echo "📋 Pipeline completed."
         }
         failure {
-            echo 'Build failed!'
+            echo '❌ Build or Tests Failed!'
+        }
+        success {
+            echo '✅ Build and Tests passed! Ready for production.'
         }
     }
 }
