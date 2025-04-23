@@ -6,14 +6,14 @@ pipeline {
     }
 
     tools {
-        maven 'MAVEN_HOME'
-        jdk 'Java 21'
+        maven 'Maven 3.9.9'   // Replace with the name you used in Global Tool Configuration
+        jdk 'Java 21'         // Replace with the name you used for JDK in Global Tool Configuration
     }
 
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                checkout scm  // This will use the Git tool configured in Jenkins (no need for explicit Git tool here)
             }
         }
 
@@ -45,4 +45,3 @@ pipeline {
         }
     }
 }
-
