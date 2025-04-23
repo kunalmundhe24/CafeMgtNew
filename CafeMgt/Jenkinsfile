@@ -2,13 +2,12 @@ pipeline {
     agent any
 
     environment {
-        // Set any global environment variables here
         MAVEN_OPTS = "-Dmaven.test.failure.ignore=false"
     }
 
     tools {
-        maven 'Maven 3.8.5' // Replace with the name of the Maven tool in Jenkins global config
-        jdk 'Java 21'       // Replace with the name of your JDK installation
+        maven 'Maven 3.8.5'
+        jdk 'Java 21'
     }
 
     stages {
@@ -35,16 +34,6 @@ pipeline {
                 sh 'mvn package'
             }
         }
-
-        // Optional deployment stage
-        /*
-        stage('Deploy') {
-            steps {
-                // Example: copy WAR to Tomcat webapps folder
-                sh 'cp target/your-app.war /path/to/tomcat/webapps/'
-            }
-        }
-        */
     }
 
     post {
@@ -56,3 +45,4 @@ pipeline {
         }
     }
 }
+
